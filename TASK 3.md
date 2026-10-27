@@ -1,171 +1,78 @@
-**Yes, these screenshots are absolutely perfect!** 
+Perfect! Your interface name is **`br-d76fa343d352`**. 
 
-You have exactly what the rubric asks for:
-1. The fixed `COPY owner.txt /owner.txt` line.
-2. The successful `docker build` and `run` commands.
-3. The `cat /owner.txt` output showing your name and date inside the container (`Eman Abdosh - October 26, 2026`).
+Now we are on **Task 3.1: Task 1.1A (Sniffing Packets)**. We will write the Python script and run it. 
 
-Save those three images into your screenshot folder. 
+Please follow these steps exactly:
+
+### 📝 Step 1: Create the Sniffer Script
+In your VM terminal (you should currently be inside `~/Labsetup`), type:
+```bash
+cd volumes
+nano sniffer.py
+```
+Copy and paste this exact code into the editor:
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+
+def print_pkt(pkt):
+    pkt.show()
+
+# Your specific interface name
+iface = 'br-d76fa343d352' 
+print(f"Sniffing on {iface}...")
+sniff(iface=iface, filter='icmp', prn=print_pkt)
+```
+*Press `Ctrl+O`, `Enter` to save, then `Ctrl+X` to exit.*
+
+### 🐳 Step 2: Enter the Attacker Container
+According to the lab, we must run our attack code inside the attacker container (which is in host mode and can see all traffic). 
+Run this command to see your running containers:
+```bash
+docker ps
+```
+Look for the container named **`seed-attacker`** and copy its ID (it will be the first few characters of the ID, like `a1b2c3d4`).
+Now enter it:
+```bash
+docker exec -it <container_id> /bin/bash
+```
+*(Replace `<container_id>` with your actual ID).*
+Once inside, navigate to the shared volumes folder:
+```bash
+cd /volumes
+```
+
+### 🚀 Step 3: Run as Root (Successful)
+Run your sniffer:
+```bash
+python3 sniffer.py
+```
+It will say `Sniffing on br-d76fa343d352...` and hang there. 
+
+**To generate traffic:** Open a **second terminal tab** in your VM (don't close the first one!). Get into Host A's container:
+```bash
+docker exec -it <hostA_container_id> /bin/bash
+ping 10.9.0.6
+```
+Look back at your **first terminal**. You should see `pkt.show()` printing the ICMP packets! 
+
+**📸 SCREENSHOT 1:** Take a screenshot of the first terminal showing the sniffer capturing the ICMP packets.
+
+Stop the sniffer by pressing `Ctrl+C`. Exit the attacker container by typing `exit`.
+
+### 🚫 Step 4: Run as Non-Root (Failed)
+Now, let's prove why root is needed. Run the script directly on your VM (not inside the container):
+```bash
+python3 sniffer.py
+```
+*(Or switch to the `seed` user using `su seed` and run it).*
+It will immediately fail with a `PermissionError` or `Socket error: Operation not permitted`.
+
+**📸 SCREENSHOT 2:** Take a screenshot of this error message. 
+
+*(Your report explanation: "Sniffing requires root privilege because it needs to open a raw socket to capture all network traffic, bypassing the OS's normal filtering. Without root, the OS blocks this for security reasons.")*
 
 ---
 
-### 🚨 CRITICAL STEP BEFORE TASK 3
-Because we are about to start a completely new Docker environment (Task 3), you **MUST** clean up Task 2 first. If you don't, the new containers will conflict with the old ones and you will get IP/port errors.
-
-Open your VM terminal and run these two commands:
-```bash
-sudo docker rm -f $(sudo docker ps -aq)
-sudo docker rmi mytest
-```
-*(This removes the container and the image you just made).*
-
----
-
-### 🚀 Task 3: Setup (Let's do this together)
-
-Now we are moving to the Sniffing and Spoofing lab. We need to set up the `Labsetup` environment.
-
-**Step 1: Download the Labsetup file**
-In your VM terminal, run these commands to download and unzip the lab files:
-```bash
-cd ~
-wget https://seedsecuritylabs.org/Labs_20.04/Files/Sniffing_Spoofing/Labsetup.zip
-unzip Labsetup.zip
-cd Labsetup
-```
-
-**Step 2: Start the environment**
-Run these two commands (this might take a minute or two as it builds the containers):
-```bash
-dcbuild
-dcup
-```
-
-**Step 3: Find your Bridge Interface Name**
-This is the most important step for the code to work. Run:
-```bash
-ifconfig
-```
-Look through the output. You are looking for an interface that starts with **`br-`** and has the IP address **`10.9.0.1`**. 
-
-It will look something like this:
-`br-1a2b3c4d5e6f: flags=... inet 10.9.0.1 netmask...`
-
-**🛑 STOP HERE and reply to me with that exact interface name.** 
-
-*(For example, reply: "My interface is br-9f8e7d6c5b4a").* Once you give me that name, I will give you the exact Python code for **Task 1.1A** with your interface name already typed in so you can just copy, paste, and run it!
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Yes, that is perfect!** The container is gone, so it won't conflict with the new lab environment.
-
-Now, let's dive right into **Task 3**. Follow these steps exactly in your VM terminal:
-
-### 🚀 Step 1: Download and Set Up the Lab
-Copy and paste these commands one by one:
-
-```bash
-cd ~
-wget https://seedsecuritylabs.org/Labs_20.04/Files/Sniffing_Spoofing/Labsetup.zip
-unzip Labsetup.zip
-cd Labsetup
-```
-
-### 🚀 Step 2: Build and Start the Containers
-Now run these two commands (the build might take a minute, so be patient):
-
-```bash
-dcbuild
-dcup
-```
-*(If `dcbuild` or `dcup` says "command not found", run `docker-compose build` and `docker-compose up -d` instead).*
-
-### 🚀 Step 3: Find Your Interface Name
-Once the containers are running in the background, run this command:
-
-```bash
-ifconfig
-```
-
-Look closely at the output. You need to find the interface that starts with **`br-`** and has the IP address **`10.9.0.1`** next to the word `inet`.
-
-**🛑 STOP HERE.** 
-
-Reply to me with that exact interface name (for example: `br-1a2b3c4d5e6f`). 
-
-Once you give me the name, I will give you the exact Python code for **Task 1.1A** with your interface name already filled in!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-My apologies for the language switch! Let's get back on track in English. 
-
-Looking at your screenshot, you have two issues:
-1. **The Terminal:** `wget` failed because of an SSL certificate verification error.
-2. **The Browser:** You got a 404 error because the browser is looking for a directory listing, but that specific URL path doesn't show a directory.
-
-Here is the exact fix to bypass the SSL error and download the file successfully:
-
-### 🛠️ Step 1: Download the file
-Run this exact command in your terminal. It adds `--no-check-certificate` to bypass the SSL error:
-```bash
-wget --no-check-certificate https://seedsecuritylabs.org/Labs_20.04/Files/Sniffing_Spoofing/Labsetup.zip
-```
-
-### 🛠️ Step 2: Unzip and enter the folder
-Once the download finishes (it will say "saved"), run:
-```bash
-unzip Labsetup.zip
-cd Labsetup
-```
-
-### 🛠️ Step 3: Start the containers
-Now build and start the environment:
-```bash
-dcbuild
-dcup
-```
-*(Give it a minute to finish building).*
-
-### 🛠️ Step 4: Find your interface name
-Once that is done, run:
-```bash
-ifconfig
-```
-Look at the output and find the interface that starts with **`br-`** and has the IP **`10.9.0.1`**.
-
-**🛑 STOP HERE.** 
-
-Reply to me with that interface name (e.g., `br-1a2b3c4d5e6f`), and I will give you the exact Python code for Task 1.1A with your name filled in so you can just copy and paste it!
+### 🛑 Stop Here!
+Once you have those **two screenshots** (one successful sniff, one permission denied), reply **"Done"** and we will move to **Task 1.1B (BPF Filters)**!
