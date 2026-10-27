@@ -56,3 +56,69 @@ Now, here is how to test the three filters. **For each one, take a screenshot of
 **🛑 Stop here!**
 
 Once you have those **3 screenshots** (one for each filter), reply **"Done"** and we will move to **Task 1.2 (Spoofing ICMP Packets)**! You're making great progress.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+kjbglgbloigf;osafo  
+oHASougk/zbdx
+sakljdakjkbdzx    
+dkbjdksbjkbj   
+**Yes, this is exactly Screenshot 1 for Filter 1 (ICMP)!** 
+
+It perfectly shows the `echo-request` (from `10.9.0.5`) and the `echo-reply` (from `10.9.0.6`). Save this picture.
+
+Now, let's do **Filter 2** and **Filter 3** quickly to finish Task 1.1B.
+
+### 🟢 Filter 2: TCP from specific IP to port 23
+1. Stop the current sniffer by pressing `Ctrl+C` in the attacker container.
+2. Type `exit` to leave the container.
+3. Edit the script in your VM: `nano ~/Labsetup/volumes/sniffer.py`
+4. Change **line 10** to exactly this:
+```python
+sniff(iface=iface, filter='tcp and src host 10.9.0.5 and dst port 23', prn=print_pkt)
+```
+5. Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
+6. Go back into the attacker container: `docker exec -it 1de16bcd562d /bin/bash`
+7. Go to folder: `cd /volumes`
+8. Run: `python3 sniffer.py`
+9. **In your other terminal** (Host A), generate the traffic by typing:
+   ```bash
+   nc 10.9.0.6 23
+   ```
+10. **📸 Take a screenshot** of the sniffer capturing the TCP packet. Press `Ctrl+C` to stop.
+
+---
+
+### 🟣 Filter 3: Traffic to/from a specific subnet
+1. Stop the sniffer and `exit` the container.
+2. Edit the script again: `nano ~/Labsetup/volumes/sniffer.py`
+3. Change **line 10** to exactly this:
+```python
+sniff(iface=iface, filter='net 128.230.0.0/16', prn=print_pkt)
+```
+4. Save and exit.
+5. Go back into the attacker container and run: `python3 sniffer.py`
+6. **In your other terminal** (Host A), generate the traffic by typing:
+   ```bash
+   ping 128.230.0.1
+   ```
+7. **📸 Take a screenshot** of the sniffer capturing the traffic. Press `Ctrl+C` to stop.
+
+Once you have those two new screenshots, you are officially done with Section 3.1! Reply **"Done"** and we will move to **Task 1.2 (Spoofing ICMP Packets)**.
+
+
