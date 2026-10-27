@@ -1,60 +1,66 @@
-**Yes, these are perfect!** 
+**Yes, this is absolutely perfect!** 
 
-*   **Image 1 (Filter 2):** Correct. It shows `proto = tcp`, source `10.9.0.5`, destination `10.9.0.6`, and the destination port is `telnet` (port 23). 
-*   **Image 2 (Filter 3):** Correct. It shows `proto = icmp`, source `10.9.0.5`, destination `128.230.0.1` (and the reply).
+Look at packets 3 and 4:
+*   **Packet 3:** Source `1.2.3.4` -> Destination `10.9.0.5` (The spoofed request you sent).
+*   **Packet 4:** Source `10.9.0.5` -> Destination `1.2.3.4` (The victim replying to your fake IP).
 
-Save both of these. You have officially completed **Section 3.1**! 
+This is exactly the proof needed for Task 1.2. Save this screenshot!
 
-Now, let's knock out **Task 1.2: Spoofing ICMP Packets**. This is a quick one.
+---
 
-### 🚀 Task 1.2: Spoofing an ICMP Echo Request
+### 🚀 Task 1.3: Traceroute
 
-In this task, you will send a fake ping to Host A (10.9.0.5) pretending to be someone else, and prove it using Wireshark.
+For this task, we will write a Python script that uses Scapy to find the routers between your VM and a destination (like Google's 8.8.8.8). It works by sending packets with increasing TTL (Time To Live) values.
 
-**Step 1: Write the Spoofing Script**
-In your VM terminal, go to your volumes folder:
+**Step 1: Write the Traceroute Script**
+In your VM terminal, create the script:
 ```bash
 cd ~/Labsetup/volumes
-nano spoof_icmp.py
+nano traceroute.py
 ```
 Paste this exact code:
 ```python
 #!/usr/bin/env python3
 from scapy.all import *
+import sys
 
-# We are spoofing a fake IP (1.2.3.4) sending to Host A (10.9.0.5)
-ip_layer = IP(src="1.2.3.4", dst="10.9.0.5")
-icmp_layer = ICMP()
-packet = ip_layer / icmp_layer
+target = "8.8.8.8" # We are finding the route to Google DNS
 
-print("Sending spoofed ICMP packet...")
-send(packet)
-print("Sent!")
+print(f"Traceroute to {target}...")
+
+# Loop through TTL values 1 to 30
+for ttl in range(1, 30):
+    # Create IP packet with the specific TTL, and an ICMP echo request
+    pkt = IP(dst=target, ttl=ttl) / ICMP()
+    
+    # Send the packet and wait for a reply (timeout 2 seconds)
+    reply = sr1(pkt, verbose=0, timeout=2)
+    
+    if reply is None:
+        print(f"{ttl}: * * * (No response)")
+    elif reply.type == 0:
+        # Type 0 means Echo Reply, meaning we reached the destination
+        print(f"{ttl}: {reply.src} (Destination Reached!)")
+        break
+    else:
+        # Type 11 means Time Exceeded (a router in the middle dropped it)
+        print(f"{ttl}: {reply.src}")
 ```
 *Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).*
 
-**Step 2: Start Wireshark**
-1. In your VM (not inside a container), open **Wireshark** from the applications menu.
-2. Double-click on the **`br-d76fa343d352`** interface to start capturing.
+**Step 2: Run the Script**
+Enter the attacker container and run it (it needs root):
+```bash
+docker exec -it 1de16bcd562d /bin/bash
+cd /volumes
+python3 traceroute.py
+```
 
-**Step 3: Run the Attack**
-1. Go to your terminal. Enter the attacker container:
-   ```bash
-   docker exec -it 1de16bcd562d /bin/bash
-   ```
-2. Run the script:
-   ```bash
-   cd /volumes
-   python3 spoof_icmp.py
-   ```
+**Step 3: Capture the Output**
+Wait a few seconds. You will see a list of IP addresses printing out one by one. 
 
-**Step 4: Stop and Capture**
-1. Go back to Wireshark and click the red square (Stop) button.
-2. In the Wireshark filter bar at the top, type: `icmp` and hit Enter.
-3. You will see an **Echo (ping) request** with a source IP of `1.2.3.4` and a destination of `10.9.0.5`.
-
-**📸 SCREENSHOT:** Take a screenshot of Wireshark showing the spoofed packet (make sure the Source column clearly says `1.2.3.4`).
+**📸 SCREENSHOT:** Take a screenshot of your terminal showing the list of hops. 
 
 ---
 
-**🛑 Stop here!** Once you have that Wireshark screenshot, reply **"Done"**, and we will move to **Task 1.3 (Traceroute)**!
+**🛑 Stop here!** Once you have that screenshot showing the router IPs, reply **"Done"**. We are almost done with the lab! The next one is **Task 1.4 (Sniff and-then Spoof)**, which is the final task for Section 3!
