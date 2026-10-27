@@ -104,3 +104,68 @@ Look closely at the output. You need to find the interface that starts with **`b
 Reply to me with that exact interface name (for example: `br-1a2b3c4d5e6f`). 
 
 Once you give me the name, I will give you the exact Python code for **Task 1.1A** with your interface name already filled in!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+My apologies for the language switch! Let's get back on track in English. 
+
+Looking at your screenshot, you have two issues:
+1. **The Terminal:** `wget` failed because of an SSL certificate verification error.
+2. **The Browser:** You got a 404 error because the browser is looking for a directory listing, but that specific URL path doesn't show a directory.
+
+Here is the exact fix to bypass the SSL error and download the file successfully:
+
+### 🛠️ Step 1: Download the file
+Run this exact command in your terminal. It adds `--no-check-certificate` to bypass the SSL error:
+```bash
+wget --no-check-certificate https://seedsecuritylabs.org/Labs_20.04/Files/Sniffing_Spoofing/Labsetup.zip
+```
+
+### 🛠️ Step 2: Unzip and enter the folder
+Once the download finishes (it will say "saved"), run:
+```bash
+unzip Labsetup.zip
+cd Labsetup
+```
+
+### 🛠️ Step 3: Start the containers
+Now build and start the environment:
+```bash
+dcbuild
+dcup
+```
+*(Give it a minute to finish building).*
+
+### 🛠️ Step 4: Find your interface name
+Once that is done, run:
+```bash
+ifconfig
+```
+Look at the output and find the interface that starts with **`br-`** and has the IP **`10.9.0.1`**.
+
+**🛑 STOP HERE.** 
+
+Reply to me with that interface name (e.g., `br-1a2b3c4d5e6f`), and I will give you the exact Python code for Task 1.1A with your name filled in so you can just copy and paste it!
